@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Dot Rounds Mixed Randomized</title>
+<title>Dot Rounds Random BG + Colors</title>
 <style>
 body{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:Arial}
 .slide{width:1800px;height:1000px;position:relative;border:1px solid #ccc;overflow:hidden}
@@ -36,12 +36,22 @@ for(let k=0;k<7;k++){
 }
 
 function shuffle(arr){
-  const a=[...arr];
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
+ const a=[...arr];
+ for(let i=a.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [a[i],a[j]]=[a[j],a[i]];
+ }
+ return a;
+}
+
+function randomColor(){
+ const palette=["#000","#2E75B6","#C00000","#6AA84F","#7F60A8","#E69138"];
+ return palette[Math.floor(Math.random()*palette.length)];
+}
+
+function randomBackground(){
+ const colors=["#ffffff","#f2f2f2","#e8f0fe","#fff3cd","#e6ffe6","#fce4ec","#e0f7fa"];
+ slide.style.background=colors[Math.floor(Math.random()*colors.length)];
 }
 
 function randStart(n){
@@ -56,22 +66,22 @@ function randStart(n){
    let dx=p.x-x, dy=p.y-y;
    if(Math.sqrt(dx*dx+dy*dy)<90) ok=false;
   }
-  if(ok) arr.push({x,y,size:30,color:"#000"});
+  if(ok) arr.push({x,y,size:30,color:randomColor()});
  }
  while(arr.length<7) arr.push({x:900,y:500,size:0,color:"#000"});
  return arr;
 }
 
-function line(n,size,color){
+function line(n,size){
  let pts=[];
  let spacing=size*0.7;
  let total=n*size+(n-1)*spacing;
  let x=(1800-total)/2+size/2;
  for(let j=0;j<n;j++){
-  pts.push({x,y:cy,size,color});
+  pts.push({x,y:cy,size,color:randomColor()});
   x+=size+spacing;
  }
- while(pts.length<7) pts.push({x:900,y:500,size:0,color});
+ while(pts.length<7) pts.push({x:900,y:500,size:0,color:"#000"});
  return pts;
 }
 
@@ -85,37 +95,29 @@ function apply(p){
  });
 }
 
-// Build all quantity-round pairs first, then shuffle the pairs.
-// This prevents quantities from appearing in a rising pattern.
+// fully randomized sequence
 const pairs=[];
 for(let r=0;r<4;r++){
-  for(const n of baseNums){
-    pairs.push({round:r, quantity:n});
-  }
+ for(const n of baseNums){
+  pairs.push({round:r, quantity:n});
+ }
 }
+
 const shuffledPairs=shuffle(pairs);
 
 let seq=[];
 for(const item of shuffledPairs){
-  const r=item.round;
-  const n=item.quantity;
-  const size = (r===0) ? 40 : (r===1) ? 80 : (r===2) ? 80 : 80;
-  let color = "black";
+ const n=item.quantity;
+ const r=item.round;
+ const size = (r===0)?40:(r===1)?80:(r===2)?100:100;
 
-  if(r===2){
-    color = Math.random()>0.5 ? "#2E75B6" : "#C00000";
-  }
-  if(r===3){
-    const palette=["#000000","#2E75B6","#C00000","#6AA84F","#7F60A8","#E69138"];
-    color = palette[Math.floor(Math.random()*palette.length)];
-  }
-
-  seq.push(randStart(n));
-  seq.push(line(n,size,color));
+ seq.push(randStart(n));
+ seq.push(line(n,size));
 }
 
 function loop(){
  if(!running)return;
+ randomBackground();
  apply(seq[i]);
  i=(i+1)%seq.length;
  timer=setTimeout(loop,2600);
